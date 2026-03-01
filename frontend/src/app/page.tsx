@@ -186,15 +186,10 @@ export default function Dashboard() {
                                 </div>
 
                                 <div>
-                                    <div className="text-xs text-slate-500">Polygon Network Tx:</div>
-                                    <a
-                                        href={`https://amoy.polygonscan.com/tx/${proof.transaction_id}`}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="font-mono text-indigo-400 text-xs truncate block hover:text-indigo-300 hover:underline"
-                                    >
+                                    <div className="text-xs text-slate-500">Local Blockchain Tx:</div>
+                                    <div className="font-mono text-indigo-400 text-xs truncate block">
                                         {proof.transaction_id.substring(0, 20)}...
-                                    </a>
+                                    </div>
                                 </div>
                             </div>
                         ))}

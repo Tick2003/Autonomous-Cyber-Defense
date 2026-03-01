@@ -105,7 +105,7 @@ with col3:
     st.subheader("⛓️ The Blockchain Vault")
     if proofs:
         for proof in proofs:
-            st.success(f"**SHA256 Hash:**\n`{proof['sha256_hash']}`\n\n[Verify on Polygonscan](https://amoy.polygonscan.com/tx/{proof['transaction_id']})")
+            st.success(f"**SHA256 Hash:**\n`{proof['sha256_hash']}`\n\n**Local Tx ID:** `{proof['transaction_id']}`")
     else:
         st.write("Vault is empty...")
 

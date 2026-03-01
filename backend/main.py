@@ -22,10 +22,15 @@ POLYGON_RPC_URL = os.environ.get("POLYGON_RPC_URL", "https://rpc-amoy.polygon.te
 WALLET_PRIVATE_KEY = os.environ.get("WALLET_PRIVATE_KEY", "0x0000000000000000000000000000000000000000000000000000000000000000")
 WALLET_ADDRESS = os.environ.get("WALLET_ADDRESS", "0x0000000000000000000000000000000000000000")
 
+from web3.providers.eth_tester import EthereumTesterProvider
+
 # Initialize Clients
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 openai_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
-w3 = Web3(Web3.HTTPProvider(POLYGON_RPC_URL))
+
+# Use Local In-Memory Blockchain
+w3 = Web3(EthereumTesterProvider())
+print("[System] Connecting to Local In-Memory Blockchain...")
 
 app = FastAPI(title="Autonomous Cyber Defense PoC")
 
@@ -61,20 +66,20 @@ async def vault_agent(log_data: dict, alert_id: str):
             print("[Agent 5] Web3 not connected. Skipping blockchain tx.")
             tx_id = f"NO_RPC_{int(datetime.now().timestamp())}"
         else:
-            nonce = w3.eth.get_transaction_count(WALLET_ADDRESS)
+            # Grab a fake account from the local in-memory blockchain
+            local_account = w3.eth.accounts[0]
             tx = {
-                'nonce': nonce,
-                'to': WALLET_ADDRESS,
+                'from': local_account,
+                'to': local_account,
                 'value': w3.to_wei(0, 'ether'),
                 'gas': 2000000,
                 'gasPrice': w3.eth.gas_price,
                 'data': w3.to_hex(text=sha256_hash),
-                'chainId': 80002 # Polygon Amoy Testnet chain ID
             }
-            signed_tx = w3.eth.account.sign_transaction(tx, WALLET_PRIVATE_KEY)
-            tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+            # Send transaction directly, eth-tester auto-signs it
+            tx_hash = w3.eth.send_transaction(tx)
             tx_id = tx_hash.hex()
-            print(f"[Agent 5] Successfully minted Hash to Polygon. Tx: {tx_id}")
+            print(f"[Agent 5] Successfully minted Hash to Local Blockchain. Tx: {tx_id}")
             
     except Exception as e:
         print(f"[Agent 5] Blockchain transaction failed: {e}")
