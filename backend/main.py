@@ -22,15 +22,12 @@ POLYGON_RPC_URL = os.environ.get("POLYGON_RPC_URL", "https://rpc-amoy.polygon.te
 WALLET_PRIVATE_KEY = os.environ.get("WALLET_PRIVATE_KEY", "0x0000000000000000000000000000000000000000000000000000000000000000")
 WALLET_ADDRESS = os.environ.get("WALLET_ADDRESS", "0x0000000000000000000000000000000000000000")
 
-from web3.providers.eth_tester import EthereumTesterProvider
-
 # Initialize Clients
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 openai_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
 
-# Use Local In-Memory Blockchain
-w3 = Web3(EthereumTesterProvider())
-print("[System] Connecting to Local In-Memory Blockchain...")
+# Use Native MOCK for Windows (bypasses eth-tester C++ build requirements)
+print("[System] Using Native Mock Blockchain for Windows Compatibility...")
 
 app = FastAPI(title="Autonomous Cyber Defense PoC")
 
@@ -62,24 +59,10 @@ async def vault_agent(log_data: dict, alert_id: str):
         log_str = json.dumps(log_data, sort_keys=True)
         sha256_hash = hashlib.sha256(log_str.encode('utf-8')).hexdigest()
         
-        if not w3.is_connected():
-            print("[Agent 5] Web3 not connected. Skipping blockchain tx.")
-            tx_id = f"NO_RPC_{int(datetime.now().timestamp())}"
-        else:
-            # Grab a fake account from the local in-memory blockchain
-            local_account = w3.eth.accounts[0]
-            tx = {
-                'from': local_account,
-                'to': local_account,
-                'value': w3.to_wei(0, 'ether'),
-                'gas': 2000000,
-                'gasPrice': w3.eth.gas_price,
-                'data': w3.to_hex(text=sha256_hash),
-            }
-            # Send transaction directly, eth-tester auto-signs it
-            tx_hash = w3.eth.send_transaction(tx)
-            tx_id = tx_hash.hex()
-            print(f"[Agent 5] Successfully minted Hash to Local Blockchain. Tx: {tx_id}")
+        # Simulate local blockchain transaction without eth-tester
+        await asyncio.sleep(1) # simulate network delay
+        tx_id = f"0xlocal_mock_{hashlib.md5(str(datetime.now().timestamp()).encode()).hexdigest()}"
+        print(f"[Agent 5] Successfully minted Hash to Local Mock Blockchain. Tx: {tx_id}")
             
     except Exception as e:
         print(f"[Agent 5] Blockchain transaction failed: {e}")
